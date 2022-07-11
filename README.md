@@ -1,6 +1,12 @@
+# goods-remaining-bot
+
+余量机器人*1
+
+# ! 以下是最原始的版本完成时实现的教程，仅供参考，如果有误完全是我的问题 !
+
 # 功能
 
-帮助(/help)，存图(/添加余量)，看图(/看余量)，删图(/删余量)
+帮助(/余量帮助)，存图(/添加余量)，看图(/看余量)，删图(/删余量)
 
 
 
@@ -11,7 +17,7 @@
 
 ### 1. 改机器人所属者qq(用于显示余量图编号)
 
-前往bot/main.go，修改14行的MasterQQ
+前往bot/main.go，修改14行的MasterQQ的值
 
 
 ### 2. 生成go-cqhttp所需的文件
@@ -51,7 +57,7 @@ $ apt install -y build-essential
 $ yum group install "Development Tools"
 ```
 
-使用pacman(Arch)或者apk(Alpine)等等其他的应该都比我nb，我正好也不会用，略
+使用pacman(Arch)或者apk(Alpine)等等其他的用户应该都比我nb，我正好也不会用，略
 
 
 ### 5. 复制systemd中的自启动文件，设置开机自启动
