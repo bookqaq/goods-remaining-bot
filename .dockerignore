@@ -1,0 +1,7 @@
+data/go-cqhttp/data
+data/go-cqhttp/logs
+data/go-cqhttp/go-cqhttp.exe
+
+data/walle-q
+logs/
+*_test.go

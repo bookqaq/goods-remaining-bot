@@ -1,0 +1,8 @@
+[Unit]
+Description=goods-remaining-bot
+[Service]
+WorkingDirectory=/usr/src/goods-remaining-bot/
+ExecStart=/usr/src/goods-remaining-bot/goods-remaining-bot
+
+[Install]
+WantedBy=multi-user.target

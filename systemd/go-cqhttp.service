@@ -1,0 +1,8 @@
+[Unit]
+Description=go-cqhttp
+[Service]
+WorkingDirectory=/usr/src/goods-remaining-bot/data/go-cqhttp
+ExecStart=go-cqhttp -faststart
+
+[Install]
+WantedBy=multi-user.target
