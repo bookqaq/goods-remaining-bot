@@ -8,15 +8,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var GroupUserMapping struct {
-	InsertOne,
-	InsertMany,
-	SelectByOwner,
-	DeleteOne,
-	DeleteMany,
-	Exist *sql.Stmt
-}
-
 func Initialize() {
 	db := conncet()
 

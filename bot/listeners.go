@@ -38,6 +38,9 @@ func handlerHelp(e Pichubot.MessageGroup) {
 	}
 }
 
+func handlerGroupMsgCommandParser(e Pichubot.MessageGroup)
+func handlerPrivateMsgCommandParser(e Pichubot.MessagePrivate)
+
 func handlerGoodsGet(e Pichubot.MessageGroup) {
 	if e.Message != "/看余量" {
 		return

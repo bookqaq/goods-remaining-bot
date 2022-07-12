@@ -8,7 +8,8 @@ import (
 
 var RSGroupMapping struct {
 	InsertOne,
-	SelectByRS,
+	SelectGP,
+	SelectRS,
 	DeleteOne *sql.Stmt
 }
 
@@ -25,7 +26,13 @@ func rsGroupMappingOperations(db *sql.DB, wg *sync.WaitGroup) {
 	if err != nil {
 		log.Panic(err)
 	}
-	RSGroupMapping.SelectByRS = tmp
+	RSGroupMapping.SelectGP = tmp
+
+	tmp, err = db.Prepare("SELECT rs FROM rsGroupMapping WHERE gp=?;")
+	if err != nil {
+		log.Panic(err)
+	}
+	RSGroupMapping.SelectRS = tmp
 
 	tmp, err = db.Prepare("DELETE FROM rsGroupMapping WHERE rs=? AND gp=?;")
 	if err != nil {
