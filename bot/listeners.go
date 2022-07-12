@@ -60,7 +60,7 @@ func handlerGoodsGet(e Pichubot.MessageGroup) {
 		if e.UserID == bot.Config.MasterQQ {
 			msg += fmt.Sprintf("id: %d\n", unit.Priv)
 		}
-		msg += fmt.Sprintf("%s\n", cqcode.CQImage.Send(unit.ImageAddBase64URL()))
+		msg += fmt.Sprintf("%s\n", cqcode.CQImage.Generate(unit.ImageAddBase64URL()))
 	}
 	msg = strings.TrimRight(msg, "\n")
 	if msg == "群内余量:" {
