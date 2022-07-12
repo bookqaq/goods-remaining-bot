@@ -14,7 +14,7 @@ type cqImage struct {
 
 var CQImage cqImage = cqImage{
 	All:  regexp.MustCompile(`\[CQ:image,[0-9A-Za-z=:/?.,_-]*\]`),
-	Url:  regexp.MustCompile(`url=[0-9A-Za-z=:/?._,-]+`), // conside changing back to * if + is not working
+	Url:  regexp.MustCompile(`url=[0-9A-Za-z=:/?._,-]+`), // consider changing back to * if + is not working
 	File: regexp.MustCompile(`file=[0-9A-Za-z.]+`),
 }
 

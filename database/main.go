@@ -3,17 +3,10 @@ package database
 import (
 	"database/sql"
 	"log"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 )
-
-var GoodsImages struct {
-	InsertOne,
-	SelectAll,
-	SelectByName,
-	DeleteOne,
-	DeleteByName *sql.Stmt
-}
 
 var GroupUserMapping struct {
 	InsertOne,
@@ -26,7 +19,16 @@ var GroupUserMapping struct {
 
 func Initialize() {
 	db := conncet()
-	goodsOperation(db)
+
+	var wg *sync.WaitGroup
+	wg.Add(4)
+
+	go imageStoreOperations(db, wg)
+	go recordSpaceOperations(db, wg)
+	go rsGroupMappingOperations(db, wg)
+	go rsUserMappingOperations(db, wg)
+
+	wg.Wait()
 }
 
 func conncet() *sql.DB {
@@ -35,44 +37,4 @@ func conncet() *sql.DB {
 		log.Panic(err)
 	}
 	return db
-}
-
-func goodsOperation(db *sql.DB) {
-	tmp, err := db.Prepare("INSERT INTO remainingGoodsImages(name, url) values (?,?);")
-	if err != nil {
-		log.Panic(err)
-	}
-	GoodsImages.InsertOne = tmp
-
-	tmp, err = db.Prepare("SELECT priv, name, url FROM remainingGoodsImages;")
-	if err != nil {
-		log.Panic(err)
-	}
-	GoodsImages.SelectAll = tmp
-
-	tmp, err = db.Prepare("SELECT priv, name, url FROM remainingGoodsImages where name=?;")
-	if err != nil {
-		log.Panic(err)
-	}
-	GoodsImages.SelectByName = tmp
-
-	tmp, err = db.Prepare("DELETE FROM remainingGoodsImages WHERE priv=?;")
-	if err != nil {
-		log.Panic(err)
-	}
-	GoodsImages.DeleteOne = tmp
-
-	tmp, err = db.Prepare("DELETE FROM remainingGoodsImages WHERE name=?;")
-	if err != nil {
-		log.Panic(err)
-	}
-	GoodsImages.DeleteByName = tmp
-}
-
-func groupUserMappingOperation(db *sql.DB) {
-	tmp, err := db.Prepare("SELECT 1 FROM groupUserMappings WHERE id=? LIMIT 1")
-	if err != nil {
-		log.Panic(err)
-	}
-	GroupUserMapping.Exist = tmp
 }
