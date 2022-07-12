@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	cqcode "bookq.xyz/goods-remaining-bot/bot/cq-code"
+	imagestore "bookq.xyz/goods-remaining-bot/bot/image-store"
 	"bookq.xyz/goods-remaining-bot/database"
-	"bookq.xyz/goods-remaining-bot/utils"
 	Pichubot "github.com/0ojixueseno0/go-Pichubot"
 )
 
@@ -29,7 +29,7 @@ func longEvents(e Pichubot.MessageGroup) {
 
 func handlerHelp(e Pichubot.MessageGroup) {
 	msg := e.Message
-	if msg == "/余量帮助" {
+	if msg == "/谷子bot 帮助" {
 		Pichubot.SendGroupMsg(`可用的指令如下:
 /余量帮助 显示本条指令
 /添加余量 <图片> 添加余量图
@@ -50,7 +50,7 @@ func handlerGoodsGet(e Pichubot.MessageGroup) {
 	}
 	msg := "群内余量:\n"
 	for res.Next() {
-		var unit utils.GoodsRemainingImage
+		var unit imagestore.Image
 		err := res.Scan(&unit.Priv, &unit.Name, &unit.Url)
 		if err != nil {
 			log.Println(err)
@@ -104,7 +104,7 @@ func handlerGoodsInsert(e Pichubot.MessageGroup) {
 	if e.Message == "/添加余量" {
 		e_long := Pichubot.NewEvent(e.Sender.UserID, e.GroupID, name_longEventImageInsert)
 		Pichubot.SendGroupMsg(`请发送余量图片(输入'取消'来取消添加)`, e.GroupID)
-		res_long, cancled := longEventImageInsert(e_long)
+		res_long, cancled := longEventImageInsert(e_long, rs)
 		if cancled {
 			Pichubot.SendGroupMsg("取消了余量添加", e.GroupID)
 			return
@@ -159,65 +159,4 @@ func handlerGoodsInsert(e Pichubot.MessageGroup) {
 	if err != nil {
 		log.Println(err)
 	}
-}
-
-func longEventImageInsert(e Pichubot.LongEvent) (map[string]interface{}, bool) {
-	defer e.Close()
-	for {
-		msg := <-*e.Channel
-		if msg == "取消" {
-			return map[string]interface{}{}, true
-		}
-		if cqcode.CQImage.All.FindIndex([]byte(msg)) != nil {
-			return insertGoodsImage(msg), false
-		}
-	}
-}
-
-func insertGoodsImage(msg string) map[string]interface{} {
-	var inserted []int64
-	var failed []int
-	data := cqcode.CQImage.All.FindAll([]byte(msg), -1)
-	if data == nil {
-		return nil
-	}
-	for i, item := range data {
-		img := cqcode.CQImage.File.Find(item)
-		if img == nil {
-			continue
-		}
-		fileName := strings.TrimLeft(string(img), "file=")
-		fres, err := Pichubot.GetImage(fileName)
-		if err != nil {
-			log.Println(err)
-			failed = append(failed, i+1)
-			continue
-		}
-		imgurl, ok := fres["data"].(map[string]interface{})["url"].(string)
-		if !ok || imgurl == "" {
-			log.Println(err)
-			failed = append(failed, i+1)
-			continue
-		}
-		img_b64, err := utils.Base64_Marshal(imgurl) // 图片有缓存，要拿真实地址
-		if err != nil {
-			log.Println(err)
-			failed = append(failed, i+1)
-			continue
-		}
-		res, err := database.GoodsImages.InsertOne.Exec("", img_b64)
-		if err != nil {
-			log.Println(err)
-			failed = append(failed, i+1)
-			continue
-		}
-		id, err := res.LastInsertId()
-		if err != nil {
-			log.Println(err)
-			failed = append(failed, i+1)
-			continue
-		}
-		inserted = append(inserted, id)
-	}
-	return map[string]interface{}{"success": inserted, "failed": failed}
 }

@@ -11,7 +11,6 @@ var RecordSpace struct {
 	UpdateType,
 	DeleteOne,
 	SelectByOwner,
-	Exist,
 	Auth *sql.Stmt
 }
 
@@ -29,7 +28,7 @@ func recordSpaceOperations(db *sql.DB, wg *sync.WaitGroup) {
 	}
 	RecordSpace.UpdateType = tmp
 
-	tmp, err = db.Prepare("DELETE FROM recordSpace WHERE owner=? AND name=?;")
+	tmp, err = db.Prepare("DELETE FROM recordSpace WHERE name=? AND owner=?;")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -40,12 +39,6 @@ func recordSpaceOperations(db *sql.DB, wg *sync.WaitGroup) {
 		log.Panic(err)
 	}
 	RecordSpace.SelectByOwner = tmp
-
-	tmp, err = db.Prepare("SELECT 1 FROM recordSpace WHERE name=? LIMIT 1;")
-	if err != nil {
-		log.Panic(err)
-	}
-	RecordSpace.Exist = tmp
 
 	tmp, err = db.Prepare("SELECT id FROM recordSpace WHERE name=? AND owner=?")
 	if err != nil {

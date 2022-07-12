@@ -10,7 +10,8 @@ var ImageStore struct {
 	InsertOne,
 	SelectByRS,
 	DeleteOne,
-	DeleteByRS *sql.Stmt
+	DeleteByRS,
+	Exist *sql.Stmt
 }
 
 func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
@@ -22,7 +23,7 @@ func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
 	}
 	ImageStore.InsertOne = tmp
 
-	tmp, err = db.Prepare("SELECT url, name FROM imageStore WHERE rs=?;")
+	tmp, err = db.Prepare("SELECT priv, url, name FROM imageStore WHERE rs=?;")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -39,4 +40,10 @@ func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
 		log.Panic(err)
 	}
 	ImageStore.DeleteByRS = tmp
+
+	tmp, err = db.Prepare("SELECT 1 FROM imageStore WHERE priv=? LIMIT 1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	ImageStore.Exist = tmp
 }
