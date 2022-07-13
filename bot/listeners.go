@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,8 @@ import (
 const (
 	name_longEventImageInsert = "goodsInsert"
 )
+
+var splitMultipleSpaces = regexp.MustCompile("\\s+")
 
 func longEvents(e Pichubot.MessageGroup) {
 	for _, value := range Pichubot.LongEvents {
@@ -38,8 +41,28 @@ func handlerHelp(e Pichubot.MessageGroup) {
 	}
 }
 
-func handlerGroupMsgCommandParser(e Pichubot.MessageGroup)
-func handlerPrivateMsgCommandParser(e Pichubot.MessagePrivate)
+func handlerPrivateMsgCommandParser(e Pichubot.MessagePrivate) {
+	cmd_arr := splitMultipleSpaces.Split(e.Message, -1)
+	if len(cmd_arr) < 2 || cmd_arr[0] != "/谷子bot" {
+		return
+	}
+	var s string
+	switch cmd_arr[1] {
+	case "图库":
+		s = rsCommandParser(cmd_arr[2:], e.UserID)
+	default:
+		s = "目前没有图库以外的操作，需要更多功能的话请向我提出请求"
+	}
+	MsgSender.Private <- QQMessage{Dst: e.UserID, S: s}
+}
+func handlerGroupMsgCommandParser(e Pichubot.MessageGroup) {
+	switch e.Message {
+	case "/看余量":
+		quickGetRemainingRS(e.GroupID)
+	case "/看肾表":
+		quickGetBillingRS(e.GroupID)
+	}
+}
 
 func handlerGoodsGet(e Pichubot.MessageGroup) {
 	if e.Message != "/看余量" {
@@ -91,7 +114,7 @@ func handlerGoodDelete(e Pichubot.MessageGroup) {
 			Pichubot.SendGroupMsg(fmt.Sprintf("%s数字转换失败了", v), e.GroupID)
 			return
 		}
-		_, err = database.GoodsImages.DeleteOne.Exec(i)
+		_, err = database.ImageStore.DeleteOne.Exec(i)
 		if err != nil {
 			log.Println(err)
 			Pichubot.SendGroupMsg(fmt.Sprintf("%s删除失败了(%s)", v, err), e.GroupID)
@@ -114,7 +137,7 @@ func handlerGoodsInsert(e Pichubot.MessageGroup) {
 		}
 		res = res_long
 	} else if strings.Index(e.Message, "/添加余量") == 0 {
-		res = insertGoodsImage(e.Message)
+		res = imagestore.InsertImageFromMessage(e.Message, 123)
 	} else {
 		return
 	}

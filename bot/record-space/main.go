@@ -1,39 +1,28 @@
 package recordspace
 
 import (
-	"bookq.xyz/goods-remaining-bot/database"
+	"errors"
+	"fmt"
 )
 
-// rs.ID can be empty
-func CreateOne(rs Record) error {
-	_, err := database.RecordSpace.InsertOne.Exec(rs.Owner, rs.Name, rs.RType)
-	return err
-}
-
-func UpdateType(targetType uint8, name string, owner int64) error {
-	_, err := database.RecordSpace.UpdateType.Exec(targetType, name, owner)
-	return err
-}
-
-func DeleteOne(name string, owner int64) error {
-	_, err := database.RecordSpace.DeleteOne.Exec(name, owner)
-	return err
-}
-
-func QueryOwnedRS(owner int64) ([]Record, error) {
-	res := make([]Record, 0, 2)
-	rows, err := database.RecordSpace.SelectByOwner.Query(owner)
+func TypeDetectAndUpdate(owner int64, rsname, rstype string) error {
+	var affected int64
+	var err error
+	switch rstype {
+	case CONST_RTYPE_DEFAULT_STRING:
+		affected, err = UpdateType(CONST_RTYPE_DEFAULT, rsname, owner)
+	case CONST_RTYPE_REMAINING_STRING:
+		affected, err = UpdateType(CONST_RTYPE_REMAINING, rsname, owner)
+	case CONST_RTYPE_BILLING_STRING:
+		affected, err = UpdateType(CONST_RTYPE_BILLING, rsname, owner)
+	default:
+		affected, err = UpdateType(CONST_RTYPE_OTHERS, rsname, owner)
+	}
 	if err != nil {
-		return nil, err
+		return err
 	}
-	for rows.Next() {
-		var item Record
-		err = rows.Scan(&item)
-		if err != nil {
-			return nil, err
-		}
-		res = append(res, item)
+	if affected < 1 {
+		return errors.New(fmt.Sprintf("%s:%s", "未找到图库", rsname))
 	}
-
-	return res, nil
+	return nil
 }
