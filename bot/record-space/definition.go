@@ -66,7 +66,7 @@ func QueryOwnedRS(owner int64) ([]Record, error) {
 	}
 	for rows.Next() {
 		var item Record
-		err = rows.Scan(&item)
+		err = rows.Scan(&item.Owner, &item.Name, &item.RType)
 		if err != nil {
 			return nil, err
 		}

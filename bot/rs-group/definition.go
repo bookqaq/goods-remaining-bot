@@ -52,7 +52,7 @@ func SelectRS(gp int64) ([]ViewOpGroupGetRS, error) {
 	res := make([]ViewOpGroupGetRS, 0, 3)
 	for rows.Next() {
 		var item ViewOpGroupGetRS
-		err = rows.Scan(&item)
+		err = rows.Scan(&item.ID, &item.Name, &item.RType, &item.Group)
 		if err != nil {
 			return nil, err
 		}
@@ -67,13 +67,13 @@ func DeleteOne(rs int32, gp int64) error {
 }
 
 func DeleteByRS(rs int32) error {
-	_, err := database.ImageStore.DeleteByRS.Exec(rs)
+	_, err := database.RSGroupMapping.DeleteByRS.Exec(rs)
 	return err
 }
 
 func SelectOneByRSAndGroup(rs string, group int64) (ViewOpGroupGetRS, error) {
 	var res ViewOpGroupGetRS
-	err := database.RSGroupMapping.SelectOneByRSAndGroup.QueryRow(group, rs).Scan(&res)
+	err := database.RSGroupMapping.SelectOneByRSAndGroup.QueryRow(group, rs).Scan(&res.ID, &res.Name, &res.Group)
 	if err != nil {
 		return ViewOpGroupGetRS{}, err
 	}
@@ -82,12 +82,12 @@ func SelectOneByRSAndGroup(rs string, group int64) (ViewOpGroupGetRS, error) {
 
 func Auth(rs string, sender int64) (int32, error) {
 	var rsview rsuser.ViewOpUserGetRS
-	err := database.RSUserMapping.SelectOne.QueryRow(rs, sender).Scan(rsview)
+	err := database.RSUserMapping.SelectOne.QueryRow(rs, sender).Scan(&rsview.Owner, &rsview.Name, &rsview.RType, &rsview.QQ)
 	if err != nil {
 		return -1, fmt.Errorf("查询图库时失败:%s", err.Error())
 	}
 	var rsid int32
-	err = database.RecordSpace.Auth.QueryRow(rs, rsview.Owner).Scan(rsid)
+	err = database.RecordSpace.Auth.QueryRow(rs, rsview.Owner).Scan(&rsid)
 	if err != nil {
 		return -1, fmt.Errorf("未通过图库验证:%s", err.Error())
 	}

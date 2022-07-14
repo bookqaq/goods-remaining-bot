@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	cqcode "bookq.xyz/goods-remaining-bot/bot/cq-code"
 	imagestore "bookq.xyz/goods-remaining-bot/bot/image-store"
 	recordspace "bookq.xyz/goods-remaining-bot/bot/record-space"
 	rsgroup "bookq.xyz/goods-remaining-bot/bot/rs-group"
@@ -93,6 +94,10 @@ func rsCommandParser(commands []string, sender int64) string {
 			return fmt.Sprintf("删除群聊链接时失败，请联系我进行手动删除:%s", err)
 		}
 
+		if _, err = imagestore.DeleteByRS(rsid); err != nil {
+			return fmt.Sprintf("删除图库图片时失败，请联系我进行手动删除:%s", err)
+		}
+
 		if _, err = recordspace.DeleteOne(commands[1], sender); err != nil {
 			return fmt.Sprintf("删除图库时失败，请联系我进行手动删除:%s", err.Error())
 		}
@@ -118,13 +123,13 @@ func rsUserCommandParser(commands []string, sender int64) string {
 		}
 
 		var rsview rsuser.ViewOpUserGetRS
-		err := database.RSUserMapping.SelectOne.QueryRow(rs, sender).Scan(rsview)
+		err := database.RSUserMapping.SelectOne.QueryRow(rs, sender).Scan(&rsview.Owner, &rsview.Name, &rsview.RType, &rsview.QQ)
 		if err != nil {
 			return fmt.Sprintf("查询图库时失败:%s", err.Error())
 		}
 
 		var rsid int32
-		err = database.RecordSpace.Auth.QueryRow(rs, rsview.Owner).Scan(rsid)
+		err = database.RecordSpace.Auth.QueryRow(rs, rsview.Owner).Scan(&rsid)
 		if err != nil {
 			return fmt.Sprintf("未通过图库验证:%s", err.Error())
 		}
@@ -141,7 +146,7 @@ func rsUserCommandParser(commands []string, sender int64) string {
 		return "添加成功"
 	case "查询":
 		var rsid int32
-		err := database.RecordSpace.Auth.QueryRow(rs, sender).Scan(rsid)
+		err := database.RecordSpace.Auth.QueryRow(rs, sender).Scan(&rsid)
 		if err != nil {
 			return fmt.Sprintf("未通过图库验证:%s", err.Error())
 		}
@@ -162,7 +167,7 @@ func rsUserCommandParser(commands []string, sender int64) string {
 		}
 
 		var rsid int32
-		err := database.RecordSpace.Auth.QueryRow(rs, sender).Scan(rsid)
+		err := database.RecordSpace.Auth.QueryRow(rs, sender).Scan(&rsid)
 		if err != nil {
 			return fmt.Sprintf("未通过图库验证:%s", err.Error())
 		}
@@ -271,7 +276,10 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 			return err.Error()
 		}
 
-		event := Pichubot.NewEvent(sender, group, fmt.Sprintf("%s-%d-%d", rs, sender, group))
+		event := Pichubot.NewEvent(sender, group, name_longEventImageInsert)
+		if group == 0 {
+			MsgSender.Private <- QQMessage{Dst: sender, S: `请发送需要添加的图片(发送 取消 以取消添加)`}
+		}
 		res, cancled := longEventImageInsert(event, rsid)
 		if cancled {
 			return "取消了图片添加"
@@ -302,7 +310,7 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		var b strings.Builder
 		b.WriteString("图库:")
 		for _, item := range res {
-			fmt.Fprintf(&b, "\nid:%d\n%s", item.Priv, item.Url)
+			fmt.Fprintf(&b, "\nid:%d\n%s", item.Priv, cqcode.CQImage.Generate(item.Url))
 		}
 		return b.String()
 	case commands[0] == "查询":
@@ -320,7 +328,7 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		var b strings.Builder
 		b.WriteString("图库:")
 		for _, item := range res {
-			fmt.Fprintf(&b, "\n%s", item.Url)
+			fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(item.Url))
 		}
 		return b.String()
 	case commands[0] == "删除":

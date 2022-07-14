@@ -29,7 +29,7 @@ func ParseImageInsertResult(res map[string]interface{}) string {
 		b.WriteString("张图片添加失败了\n")
 	}
 	if ls := len(success); ls > 0 {
-		b.WriteString("添加成功的余量编号为:")
+		b.WriteString("添加成功的编号为:")
 		for _, v := range success {
 			fmt.Fprintf(&b, "%d ", v)
 		}

@@ -29,7 +29,7 @@ func SelectRSByQQ(qq int64) ([]ViewOpUserGetRS, error) {
 	res := make([]ViewOpUserGetRS, 0, 10)
 	for rows.Next() {
 		var item ViewOpUserGetRS
-		if err = rows.Scan(item); err != nil {
+		if err = rows.Scan(&item.Owner, &item.Name, &item.RType, &item.QQ); err != nil {
 			return nil, err
 		}
 		res = append(res, item)
@@ -45,7 +45,7 @@ func SelectByRS(rs int32) ([]UserMapping, error) {
 	res := make([]UserMapping, 0, 10)
 	for rows.Next() {
 		var item UserMapping
-		if err = rows.Scan(&item); err != nil {
+		if err = rows.Scan(&item.ID, &item.RS, &item.QQ); err != nil {
 			return nil, err
 		}
 		res = append(res, item)

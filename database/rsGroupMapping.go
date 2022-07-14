@@ -11,7 +11,8 @@ var RSGroupMapping struct {
 	SelectGP,
 	SelectRS,
 	SelectOneByRSAndGroup,
-	DeleteOne *sql.Stmt
+	DeleteOne,
+	DeleteByRS *sql.Stmt
 }
 
 func rsGroupMappingOperations(db *sql.DB, wg *sync.WaitGroup) {
@@ -46,5 +47,11 @@ func rsGroupMappingOperations(db *sql.DB, wg *sync.WaitGroup) {
 		log.Panic(err)
 	}
 	RSGroupMapping.DeleteOne = tmp
+
+	tmp, err = db.Prepare("DELETE FROM rsGroupMapping WHERE rs=?;")
+	if err != nil {
+		log.Panic(err)
+	}
+	RSGroupMapping.DeleteByRS = tmp
 
 }

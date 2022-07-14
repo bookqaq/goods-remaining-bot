@@ -15,6 +15,8 @@ func groupLongEvents(e Pichubot.MessageGroup) {
 			switch value.EventKey {
 			case name_longEventImageInsert:
 				*value.Channel <- e.Message
+			case name_longEventImageUpdate:
+				*value.Channel <- e.Message
 			}
 		}
 	}
@@ -25,6 +27,8 @@ func privateLongEvents(e Pichubot.MessagePrivate) {
 		if value.UserID == e.UserID {
 			switch value.EventKey {
 			case name_longEventImageInsert:
+				*value.Channel <- e.Message
+			case name_longEventImageUpdate:
 				*value.Channel <- e.Message
 			}
 		}
@@ -79,5 +83,5 @@ func handlerGroupMsgCommandParser(e Pichubot.MessageGroup) {
 		}
 	}
 
-	MsgSender.Group <- QQMessage{Dst: e.UserID, S: s}
+	MsgSender.Group <- QQMessage{Dst: e.GroupID, S: s}
 }

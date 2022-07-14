@@ -1,6 +1,8 @@
 package bot
 
 import (
+	"errors"
+
 	cqcode "bookq.xyz/goods-remaining-bot/bot/cq-code"
 	imagestore "bookq.xyz/goods-remaining-bot/bot/image-store"
 	Pichubot "github.com/0ojixueseno0/go-Pichubot"
@@ -29,7 +31,7 @@ func longEventImageUpdate(e Pichubot.LongEvent, priv int32) error {
 	for {
 		msg := <-*e.Channel
 		if msg == "取消" {
-			return nil
+			return errors.New("取消了添加")
 		}
 		if cqcode.CQImage.All.FindIndex([]byte(msg)) != nil {
 			imagestore.UpdateOneFromMessage(msg, priv)

@@ -55,7 +55,7 @@ func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
 	}
 	ImageStore.DeleteByRS = tmp
 
-	tmp, err = db.Prepare("SELECT 1 FROM imageStore WHERE priv=? LIMIT 1;")
+	tmp, err = db.Prepare("SELECT priv FROM imageStore WHERE priv=? LIMIT 1;")
 	if err != nil {
 		log.Panic(err)
 	}

@@ -56,6 +56,11 @@ func quickImageStoreChange(commands []string, sender int64, group int64) string 
 	ret := "更新成功"
 	if pic_cqcode == "" {
 		event := Pichubot.NewEvent(sender, group, name_longEventImageUpdate)
+		if group == 0 {
+			MsgSender.Private <- QQMessage{Dst: sender, S: "请发送更换后的图片(发送 取消 以取消更改)"}
+		} else {
+			MsgSender.Group <- QQMessage{Dst: group, S: "请发送更换后的图片(发送 取消 以取消更改)"}
+		}
 		if err = longEventImageUpdate(event, img.Priv); err != nil {
 			ret = fmt.Sprintf("更新图片失败:%s", err)
 		}
@@ -85,7 +90,7 @@ func quickGetRS(rstype uint8, group int64) string {
 			var b strings.Builder
 			b.WriteString("图库:")
 			for _, item := range res {
-				fmt.Fprintf(&b, "\n%s", item.Url)
+				fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(item.Url))
 			}
 			return b.String()
 		}

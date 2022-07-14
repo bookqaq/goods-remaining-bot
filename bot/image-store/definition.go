@@ -29,7 +29,7 @@ func ImageAddBase64URL(url string) string {
 func (item *Image) NewPrivKey() int32 {
 	for {
 		key := rand.Int31()
-		if _, err := database.ImageStore.Exist.Query(key); err == sql.ErrNoRows {
+		if err := database.ImageStore.Exist.QueryRow(key).Scan(); err == sql.ErrNoRows {
 			item.Priv = key
 			return key
 		} else if err != nil { // if exec as expected, this case will be removed
@@ -38,15 +38,15 @@ func (item *Image) NewPrivKey() int32 {
 	}
 }
 
-func Exist(priv int32) (bool, error) {
-	_, err := database.ImageStore.Exist.Exec(priv)
-	if err == sql.ErrNoRows {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
-}
+//func Exist(priv int32) (bool, error) {
+//	_, err := database.ImageStore.Exist.Exec(priv)
+//	if err == sql.ErrNoRows {
+//		return false, nil
+//	} else if err != nil {
+//		return false, err
+//	}
+//	return true, nil
+//}
 
 func DeleteByRS(rs int32) (int64, error) {
 	rows, err := database.ImageStore.DeleteByRS.Exec(rs)
@@ -70,8 +70,14 @@ func DeleteOne(priv int32) error {
 
 func SelectOne(id int32) (Image, error) {
 	var res Image
-	if err := database.ImageStore.SelectOne.QueryRow(id).Scan(&res); err != nil {
+	var name sql.NullString
+	if err := database.ImageStore.SelectOne.QueryRow(id).Scan(&res.Priv, &res.Url, &name); err != nil {
 		return Image{}, err
+	}
+	if name.Valid {
+		res.Name = name.String
+	} else {
+		res.Name = ""
 	}
 	return res, nil
 }
@@ -90,9 +96,15 @@ func GetImageByRS(rs int32) ([]Image, error) {
 	res := make([]Image, 0, 10)
 	for rows.Next() {
 		var item Image
-		err = rows.Scan(&item)
+		var name sql.NullString
+		err = rows.Scan(&item.Priv, &item.Url, &name)
 		if err != nil {
 			return nil, err
+		}
+		if name.Valid {
+			item.Name = name.String
+		} else {
+			item.Name = ""
 		}
 		item.RS = rs
 		res = append(res, item)
@@ -136,7 +148,7 @@ func InsertImageFromMessage(msg string, rs int32) map[string]interface{} {
 
 		target.NewPrivKey()
 
-		res, err := database.ImageStore.InsertOne.Exec(target.Priv, target.RS, ImageAddBase64URL(target.Url))
+		res, err := database.ImageStore.InsertOne.Exec(target.Priv, rs, ImageAddBase64URL(target.Url))
 		if err != nil {
 			log.Println(err)
 			failed = append(failed, i+1)
@@ -163,12 +175,12 @@ func UpdateOneFromMessage(msg string, priv int32) error {
 	if err != nil {
 		return err
 	}
-	imgurl, ok := fres["data"].(map[string]interface{})["url"].(string)
+	imgurl, ok := fres["data"].(map[string]interface{})["url"]
 	if !ok || imgurl == "" {
 		return errors.New("解析链接失败")
 	}
 
-	imgb64, err := utils.Base64_Marshal(imgurl) // 图片有缓存，要拿真实地址
+	imgb64, err := utils.Base64_Marshal(imgurl.(string)) // 图片有缓存，要拿真实地址
 	if err != nil {
 		return err
 	}
