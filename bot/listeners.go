@@ -7,7 +7,7 @@ import (
 	Pichubot "github.com/0ojixueseno0/go-Pichubot"
 )
 
-var splitMultipleSpaces = regexp.MustCompile("\\s+")
+var splitMultipleSpaces = regexp.MustCompile(`\s+`)
 
 func groupLongEvents(e Pichubot.MessageGroup) {
 	for _, value := range Pichubot.LongEvents {
@@ -40,7 +40,7 @@ func handlerHelp(e Pichubot.MessageGroup) {
 
 func handlerPrivateMsgCommandParser(e Pichubot.MessagePrivate) {
 	cmd_arr := splitMultipleSpaces.Split(e.Message, -1)
-	if len(cmd_arr) < 2 || cmd_arr[0] != "/谷子bot" {
+	if len(cmd_arr) < 2 || cmd_arr[0] != "/谷bot" {
 		return
 	}
 	var s string
@@ -57,24 +57,27 @@ func handlerPrivateMsgCommandParser(e Pichubot.MessagePrivate) {
 	}
 	MsgSender.Private <- QQMessage{Dst: e.UserID, S: s}
 }
+
 func handlerGroupMsgCommandParser(e Pichubot.MessageGroup) {
 	var s string
 	switch e.Message {
-	case "/看余量":
+	case "/看余量图":
 		s = quickGetRS(recordspace.CONST_RTYPE_REMAINING, e.GroupID)
 	case "/看肾表":
 		s = quickGetRS(recordspace.CONST_RTYPE_BILLING, e.GroupID)
+	default:
+		cmd_arr := splitMultipleSpaces.Split(e.Message, -1)
+		if len(cmd_arr) < 2 || cmd_arr[0] != "/谷bot" {
+			return
+		}
+		switch cmd_arr[1] {
+		case "换图":
+			s = quickImageStoreChange(cmd_arr[2:], e.UserID, e.GroupID)
+		}
+		if s == "" {
+			return
+		}
 	}
-	cmd_arr := splitMultipleSpaces.Split(e.Message, -1)
-	if len(cmd_arr) < 2 || cmd_arr[0] != "/谷子bot" {
-		return
-	}
-	switch cmd_arr[1] {
-	case "换图":
-		s = quickImageStoreChange(cmd_arr[2:], e.UserID, e.GroupID)
-	}
-	if s == "" {
-		return
-	}
+
 	MsgSender.Group <- QQMessage{Dst: e.UserID, S: s}
 }

@@ -14,6 +14,10 @@ import (
 )
 
 func quickImageStoreChange(commands []string, sender int64, group int64) string {
+	if len(commands) < 1 {
+		return "未检测到相关指令，请确认指令格式"
+	}
+
 	rss, err := recordspace.QueryOwnedRS(sender)
 	if err != nil {
 		return fmt.Sprintf("验证失败:%s", err)

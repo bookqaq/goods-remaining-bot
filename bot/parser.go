@@ -17,6 +17,27 @@ import (
 
 func rsCommandParser(commands []string, sender int64) string {
 	clen := len(commands)
+
+	if clen == 1 && commands[0] == "查询图库" {
+		res, err := rsuser.SelectRSByQQ(sender)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return "图库:无"
+			}
+			return fmt.Sprintf("查询失败了:%s", err.Error())
+		}
+
+		var builder strings.Builder
+		builder.Grow(2048)
+		builder.WriteString("图库:")
+		for _, item := range res {
+			fmt.Fprintf(&builder, "\n类型:%s  名称:%s",
+				recordspace.CONST_RTYPE_REVERSE_MAPPING[item.RType],
+				item.Name)
+		}
+		return builder.String()
+	}
+
 	if clen < 2 {
 		return "未检测到有效指令"
 	}
@@ -42,7 +63,7 @@ func rsCommandParser(commands []string, sender int64) string {
 		if err = rsuser.InsertOne(int32(rsid), sender); err != nil {
 			return fmt.Sprintf("创建链接时失败，请联系我来删除图库:%s", err.Error())
 		}
-		return fmt.Sprintf(`%s"%s"%s`, "图库", commands[1], "创建成功")
+		return "图库创建成功"
 	case commands[1] == "修改类型":
 		if clen != 3 {
 			return fmt.Sprintf(`未修改图库"%s"的类型，请提供图库类型(%s\%s\%s)`,
@@ -59,7 +80,7 @@ func rsCommandParser(commands []string, sender int64) string {
 		return "图库类型修改成功(请务必要保证每个群只有一个余量图和一个肾表)"
 	case commands[0] == "删除图库":
 		var rsid int32
-		err := database.RecordSpace.Auth.QueryRow(commands[1], sender).Scan(rsid)
+		err := database.RecordSpace.Auth.QueryRow(commands[1], sender).Scan(&rsid)
 		if err != nil {
 			return fmt.Sprintf("未通过图库验证:%s", err.Error())
 		}
@@ -77,24 +98,7 @@ func rsCommandParser(commands []string, sender int64) string {
 		}
 
 		return fmt.Sprintf("成功删除了图库%s", commands[1])
-	case commands[0] == "查询":
-		res, err := rsuser.SelectRSByQQ(sender)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return "图库:无"
-			}
-			return fmt.Sprintf("查询失败了:%s", err.Error())
-		}
 
-		var builder strings.Builder
-		builder.Grow(2048)
-		builder.WriteString("图库:")
-		for _, item := range res {
-			fmt.Fprintf(&builder, "\n类型:%s  名称:%s",
-				recordspace.CONST_RTYPE_REVERSE_MAPPING[item.RType],
-				item.Name)
-		}
-		return builder.String()
 	}
 	return "未检测到相关指令，请确认指令格式"
 }
@@ -109,6 +113,10 @@ func rsUserCommandParser(commands []string, sender int64) string {
 
 	switch commands[0] {
 	case "添加":
+		if clen != 2 {
+			return "未进行添加操作，请检查指令格式，现阶段仅支持单次添加一个"
+		}
+
 		var rsview rsuser.ViewOpUserGetRS
 		err := database.RSUserMapping.SelectOne.QueryRow(rs, sender).Scan(rsview)
 		if err != nil {
@@ -121,9 +129,6 @@ func rsUserCommandParser(commands []string, sender int64) string {
 			return fmt.Sprintf("未通过图库验证:%s", err.Error())
 		}
 
-		if clen != 2 {
-			return "未进行添加操作，请检查指令格式，现阶段仅支持单次添加一个"
-		}
 		target, err := strconv.ParseInt(commands[1], 10, 64)
 		if err != nil {
 			return fmt.Sprintf("在转换QQ号时出现错误:%s", err.Error())
@@ -152,13 +157,14 @@ func rsUserCommandParser(commands []string, sender int64) string {
 		}
 		return builder.String()
 	case "删除":
+		if clen != 2 {
+			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
+		}
+
 		var rsid int32
 		err := database.RecordSpace.Auth.QueryRow(rs, sender).Scan(rsid)
 		if err != nil {
 			return fmt.Sprintf("未通过图库验证:%s", err.Error())
-		}
-		if clen != 2 {
-			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
 		}
 
 		target, err := strconv.ParseInt(commands[1], 10, 64)
@@ -225,12 +231,12 @@ func rsGroupCommandParser(commands []string, sender int64) string {
 		}
 		return builder.String()
 	case "删除":
+		if clen != 2 {
+			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
+		}
 		rsid, err := rsgroup.Auth(rs, sender)
 		if err != nil {
 			return err.Error()
-		}
-		if clen != 2 {
-			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
 		}
 
 		target, err := strconv.ParseInt(commands[1], 10, 64)
@@ -253,6 +259,10 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 	rs := commands[0]
 	commands = commands[2:]
 	clen := len(commands)
+
+	if clen < 1 {
+		return "未检测到相关指令，请确认指令格式"
+	}
 
 	switch {
 	case commands[0] == "添加":
@@ -280,14 +290,14 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 	case commands[0] == "查询" && group == 0:
 		rsid, err := rsgroup.Auth(rs, sender)
 		if err != nil {
-			return ""
+			return fmt.Sprintf("查询图库时出错:%s", err)
 		}
 		res, err := imagestore.GetImageByRS(rsid)
 		if err != nil {
-			return ""
+			return fmt.Sprintf("查询图片时出错:%s", err)
 		}
 		if len(res) == 0 {
-			return ""
+			return "图库中未存放图片"
 		}
 		var b strings.Builder
 		b.WriteString("图库:")
@@ -298,14 +308,14 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 	case commands[0] == "查询":
 		rs, err := rsgroup.SelectOneByRSAndGroup(rs, group)
 		if err != nil {
-			return fmt.Sprintf("查询图库时出错:%s", err)
+			return ""
 		}
 		res, err := imagestore.GetImageByRS(rs.ID)
 		if err != nil {
-			return fmt.Sprintf("查询图片时出错:%s", err)
+			return ""
 		}
 		if len(res) == 0 {
-			return "图库中未存放图片"
+			return ""
 		}
 		var b strings.Builder
 		b.WriteString("图库:")
@@ -314,12 +324,12 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		}
 		return b.String()
 	case commands[0] == "删除":
+		if clen != 2 {
+			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
+		}
 		rsid, err := rsgroup.Auth(rs, sender)
 		if err != nil {
 			return err.Error()
-		}
-		if clen != 2 {
-			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
 		}
 
 		if err := imagestore.DeleteOne(rsid); err != nil {

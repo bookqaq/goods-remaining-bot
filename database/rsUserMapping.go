@@ -18,7 +18,7 @@ var RSUserMapping struct {
 func rsUserMappingOperations(db *sql.DB, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	tmp, err := db.Prepare("INSERT INTO rsUserMapping(rs, dst) VALUES(?. ?);")
+	tmp, err := db.Prepare("INSERT INTO rsUserMapping(rs, dst) VALUES(?, ?);")
 	if err != nil {
 		log.Panic(err)
 	}

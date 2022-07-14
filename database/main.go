@@ -11,13 +11,13 @@ import (
 func Initialize() {
 	db := conncet()
 
-	var wg *sync.WaitGroup
+	var wg sync.WaitGroup
 	wg.Add(4)
 
-	go imageStoreOperations(db, wg)
-	go recordSpaceOperations(db, wg)
-	go rsGroupMappingOperations(db, wg)
-	go rsUserMappingOperations(db, wg)
+	go imageStoreOperations(db, &wg)
+	go recordSpaceOperations(db, &wg)
+	go rsGroupMappingOperations(db, &wg)
+	go rsUserMappingOperations(db, &wg)
 
 	wg.Wait()
 }
