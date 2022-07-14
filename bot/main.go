@@ -18,7 +18,8 @@ var MsgSender struct {
 
 func Boot() {
 	MsgSender.Group, MsgSender.Private = make(chan QQMessage, 10), make(chan QQMessage, 10)
-	Pichubot.Listeners.OnGroupMsg = append(Pichubot.Listeners.OnGroupMsg, longEvents, handlerHelp, handlerGoodsGet, handlerGoodDelete, handlerGoodsInsert)
+	Pichubot.Listeners.OnGroupMsg = append(Pichubot.Listeners.OnGroupMsg, groupLongEvents, handlerHelp, handlerGroupMsgCommandParser)
+	Pichubot.Listeners.OnPrivateMsg = append(Pichubot.Listeners.OnPrivateMsg, privateLongEvents, handlerPrivateMsgCommandParser)
 	bot.Config = Pichubot.Config{
 		Loglvl:   Pichubot.LOGGER_LEVEL_WARNING,
 		Host:     "127.0.0.1:29290",

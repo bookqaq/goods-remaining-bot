@@ -8,6 +8,7 @@ import (
 
 var RSUserMapping struct {
 	InsertOne,
+	SelectOne,
 	SelectRSByQQ,
 	SelectByRS,
 	DeleteOne,
@@ -22,6 +23,12 @@ func rsUserMappingOperations(db *sql.DB, wg *sync.WaitGroup) {
 		log.Panic(err)
 	}
 	RSUserMapping.InsertOne = tmp
+
+	tmp, err = db.Prepare("SELECT owner, name, type, qq FROM opUserGetRS WHERE name=? AND qq=? LIMIT 1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	RSUserMapping.SelectOne = tmp
 
 	tmp, err = db.Prepare("SELECT owner, name, type, qq FROM opUserGetRS WHERE qq=?;")
 	if err != nil {

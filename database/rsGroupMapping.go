@@ -10,6 +10,7 @@ var RSGroupMapping struct {
 	InsertOne,
 	SelectGP,
 	SelectRS,
+	SelectOneByRSAndGroup,
 	DeleteOne *sql.Stmt
 }
 
@@ -28,11 +29,17 @@ func rsGroupMappingOperations(db *sql.DB, wg *sync.WaitGroup) {
 	}
 	RSGroupMapping.SelectGP = tmp
 
-	tmp, err = db.Prepare("SELECT rs FROM rsGroupMapping WHERE gp=?;")
+	tmp, err = db.Prepare("SELECT id, name, type, gp FROM opGroupGetRS WHERE gp=?;")
 	if err != nil {
 		log.Panic(err)
 	}
 	RSGroupMapping.SelectRS = tmp
+
+	tmp, err = db.Prepare("SELECT id, name, gp FROM opGroupGetRS WHERE gp=? and name=? LIMIT 1;")
+	if err != nil {
+		log.Panic(err)
+	}
+	RSGroupMapping.SelectOneByRSAndGroup = tmp
 
 	tmp, err = db.Prepare("DELETE FROM rsGroupMapping WHERE rs=? AND gp=?;")
 	if err != nil {

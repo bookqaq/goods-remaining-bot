@@ -8,7 +8,9 @@ import (
 
 var ImageStore struct {
 	InsertOne,
+	SelectOne,
 	SelectByRS,
+	UpdateOne,
 	DeleteOne,
 	DeleteByRS,
 	Exist *sql.Stmt
@@ -23,11 +25,23 @@ func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
 	}
 	ImageStore.InsertOne = tmp
 
+	tmp, err = db.Prepare("SELECT priv, url, name FROM imageStore WHERE id=?;")
+	if err != nil {
+		log.Panic(err)
+	}
+	ImageStore.SelectOne = tmp
+
 	tmp, err = db.Prepare("SELECT priv, url, name FROM imageStore WHERE rs=?;")
 	if err != nil {
 		log.Panic(err)
 	}
 	ImageStore.SelectByRS = tmp
+
+	tmp, err = db.Prepare("UPDATE imageStore SET url=? WHERE priv=?;")
+	if err != nil {
+		log.Panic(err)
+	}
+	ImageStore.UpdateOne = tmp
 
 	tmp, err = db.Prepare("DELETE FROM imageStore WHERE priv=?;")
 	if err != nil {
