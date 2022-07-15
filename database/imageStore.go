@@ -25,7 +25,7 @@ func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
 	}
 	ImageStore.InsertOne = tmp
 
-	tmp, err = db.Prepare("SELECT priv, url, name FROM imageStore WHERE priv=?;")
+	tmp, err = db.Prepare("SELECT priv, url, name, rs FROM imageStore WHERE priv=?;")
 	if err != nil {
 		log.Panic(err)
 	}

@@ -71,7 +71,7 @@ func DeleteOne(priv int32) error {
 func SelectOne(id int32) (Image, error) {
 	var res Image
 	var name sql.NullString
-	if err := database.ImageStore.SelectOne.QueryRow(id).Scan(&res.Priv, &res.Url, &name); err != nil {
+	if err := database.ImageStore.SelectOne.QueryRow(id).Scan(&res.Priv, &res.Url, &name, &res.RS); err != nil {
 		return Image{}, err
 	}
 	if name.Valid {
@@ -131,7 +131,15 @@ func InsertImageFromMessage(msg string, rs int32) map[string]interface{} {
 			failed = append(failed, i+1)
 			continue
 		}
-		imgurl, ok := fres["data"].(map[string]interface{})["url"].(string)
+
+		data, ok := fres["data"]
+		if !ok {
+			log.Printf("图片%s数据获取失败", fileName)
+			failed = append(failed, i+1)
+			continue
+		}
+
+		imgurl, ok := data.(map[string]interface{})["url"].(string)
 		if !ok || imgurl == "" {
 			log.Println(err)
 			failed = append(failed, i+1)

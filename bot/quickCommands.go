@@ -7,8 +7,9 @@ import (
 
 	cqcode "bookq.xyz/goods-remaining-bot/bot/cq-code"
 	imagestore "bookq.xyz/goods-remaining-bot/bot/image-store"
-	recordspace "bookq.xyz/goods-remaining-bot/bot/record-space"
 	rsgroup "bookq.xyz/goods-remaining-bot/bot/rs-group"
+	rsuser "bookq.xyz/goods-remaining-bot/bot/rs-user"
+	"bookq.xyz/goods-remaining-bot/database"
 
 	Pichubot "github.com/0ojixueseno0/go-Pichubot"
 )
@@ -18,9 +19,9 @@ func quickImageStoreChange(commands []string, sender int64, group int64) string 
 		return "未检测到相关指令，请确认指令格式"
 	}
 
-	rss, err := recordspace.QueryOwnedRS(sender)
+	rss, err := rsuser.SelectRSByQQ(sender)
 	if err != nil {
-		return fmt.Sprintf("验证失败:%s", err)
+		return fmt.Sprintf("验证时发生错误:%s", err)
 	}
 
 	imgID, err := strconv.ParseInt(commands[0], 10, 32)
@@ -45,7 +46,9 @@ func quickImageStoreChange(commands []string, sender int64, group int64) string 
 	}
 	auth := false
 	for _, rs := range rss {
-		if rs.ID == img.RS {
+		var rsid int32
+		database.RecordSpace.Auth.QueryRow(rs.Name, rs.Owner).Scan(&rsid)
+		if rsid == img.RS {
 			auth = true
 		}
 	}

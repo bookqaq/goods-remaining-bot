@@ -34,7 +34,7 @@ func longEventImageUpdate(e Pichubot.LongEvent, priv int32) error {
 			return errors.New("取消了添加")
 		}
 		if cqcode.CQImage.All.FindIndex([]byte(msg)) != nil {
-			imagestore.UpdateOneFromMessage(msg, priv)
+			return imagestore.UpdateOneFromMessage(msg, priv)
 		}
 	}
 }
