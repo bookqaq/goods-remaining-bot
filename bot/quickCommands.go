@@ -81,6 +81,10 @@ func quickGetRS(rstype uint8, group int64) string {
 		return fmt.Sprintf("查询失败了:%s", err)
 	}
 
+	if rss == nil || len(rss) < 1 {
+		return "未找到对应的图库，请咨询管理员(或者我)"
+	}
+
 	for _, rs := range rss {
 		if rs.RType == rstype {
 			res, err := imagestore.GetImageByRS(rs.ID)
@@ -95,5 +99,5 @@ func quickGetRS(rstype uint8, group int64) string {
 			}
 		}
 	}
-	return "未找到对应的图库，请咨询管理员(或者我)"
+	return ""
 }
