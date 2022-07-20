@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	cqcode "bookq.xyz/goods-remaining-bot/bot/cq-code"
 	imagestore "bookq.xyz/goods-remaining-bot/bot/image-store"
@@ -91,12 +90,9 @@ func quickGetRS(rstype uint8, group int64) string {
 			if len(res) == 0 {
 				return "图库中未存放图片"
 			}
-			var b strings.Builder
-			b.WriteString("图库:")
 			for _, item := range res {
-				fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(oss.Endpoint, oss.Bucket_name, item.Fname))
+				MsgSender.Group <- QQMessage{Dst: group, S: cqcode.CQImage.Generate(oss.Endpoint, oss.Bucket_name, item.Fname)}
 			}
-			return b.String()
 		}
 	}
 	return "未找到对应的图库，请咨询管理员(或者我)"

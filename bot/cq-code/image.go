@@ -23,7 +23,7 @@ var CQImage cqImage = cqImage{
 }
 
 func cqImageGenerate(endpoint string, bucket_name string, fname string) string {
-	return fmt.Sprintf(`[CQ:image,file=https://%s/%s/%s]`, endpoint, bucket_name, fname)
+	return fmt.Sprintf(`[CQ:image,file=https://%s/%s/%s,cache=0]`, endpoint, bucket_name, fname)
 }
 
 func cqImageUrlTrim(img string) string {
