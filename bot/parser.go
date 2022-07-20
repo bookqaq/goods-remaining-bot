@@ -12,6 +12,7 @@ import (
 	rsgroup "bookq.xyz/goods-remaining-bot/bot/rs-group"
 	rsuser "bookq.xyz/goods-remaining-bot/bot/rs-user"
 	"bookq.xyz/goods-remaining-bot/database"
+	"bookq.xyz/goods-remaining-bot/oss"
 
 	Pichubot "github.com/0ojixueseno0/go-Pichubot"
 )
@@ -310,7 +311,7 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		var b strings.Builder
 		b.WriteString("图库:")
 		for _, item := range res {
-			fmt.Fprintf(&b, "\nid:%d\n%s", item.Priv, cqcode.CQImage.Generate(item.Url))
+			fmt.Fprintf(&b, "\nid:%d\n%s", item.Priv, cqcode.CQImage.Generate(oss.Endpoint, oss.Bucket_name, item.Fname))
 		}
 		return b.String()
 	case commands[0] == "查询":
@@ -328,7 +329,7 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		var b strings.Builder
 		b.WriteString("图库:")
 		for _, item := range res {
-			fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(item.Url))
+			fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(oss.Endpoint, oss.Bucket_name, item.Fname))
 		}
 		return b.String()
 	case commands[0] == "删除":

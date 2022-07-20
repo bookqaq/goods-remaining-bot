@@ -19,25 +19,25 @@ var ImageStore struct {
 func imageStoreOperations(db *sql.DB, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	tmp, err := db.Prepare("INSERT INTO imageStore(priv, rs, url) VALUES (?, ?, ?);")
+	tmp, err := db.Prepare("INSERT INTO imageStore(priv, rs, fname) VALUES (?, ?, ?);")
 	if err != nil {
 		log.Panic(err)
 	}
 	ImageStore.InsertOne = tmp
 
-	tmp, err = db.Prepare("SELECT priv, url, name, rs FROM imageStore WHERE priv=?;")
+	tmp, err = db.Prepare("SELECT priv, fname, name, rs FROM imageStore WHERE priv=?;")
 	if err != nil {
 		log.Panic(err)
 	}
 	ImageStore.SelectOne = tmp
 
-	tmp, err = db.Prepare("SELECT priv, url, name FROM imageStore WHERE rs=?;")
+	tmp, err = db.Prepare("SELECT priv, fname, name FROM imageStore WHERE rs=?;")
 	if err != nil {
 		log.Panic(err)
 	}
 	ImageStore.SelectByRS = tmp
 
-	tmp, err = db.Prepare("UPDATE imageStore SET url=? WHERE priv=?;")
+	tmp, err = db.Prepare("UPDATE imageStore SET fname=? WHERE priv=?;")
 	if err != nil {
 		log.Panic(err)
 	}

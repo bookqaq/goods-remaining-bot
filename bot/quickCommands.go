@@ -10,6 +10,7 @@ import (
 	rsgroup "bookq.xyz/goods-remaining-bot/bot/rs-group"
 	rsuser "bookq.xyz/goods-remaining-bot/bot/rs-user"
 	"bookq.xyz/goods-remaining-bot/database"
+	"bookq.xyz/goods-remaining-bot/oss"
 
 	Pichubot "github.com/0ojixueseno0/go-Pichubot"
 )
@@ -93,7 +94,7 @@ func quickGetRS(rstype uint8, group int64) string {
 			var b strings.Builder
 			b.WriteString("图库:")
 			for _, item := range res {
-				fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(item.Url))
+				fmt.Fprintf(&b, "\n%s", cqcode.CQImage.Generate(oss.Endpoint, oss.Bucket_name, item.Fname))
 			}
 			return b.String()
 		}

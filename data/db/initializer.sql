@@ -21,7 +21,7 @@ CREATE TABLE rsGroupMapping (
 CREATE TABLE imageStore (
     priv    INTEGER NOT NULL,
     rs      INTEGER NOT NULL,   -- record space
-    url     TEXT NOT NULL,      -- base64 url
+    fname   TEXT NOT NULL,
     name    TEXT,
     PRIMARY KEY(priv)
     FOREIGN KEY(rs) REFERENCES recordSpace(id)

@@ -10,7 +10,7 @@ type cqImage struct {
 	All,
 	Url,
 	File *regexp.Regexp
-	Generate func(string) string
+	Generate func(string, string, string) string
 	Trim     func(string) string
 }
 
@@ -22,8 +22,8 @@ var CQImage cqImage = cqImage{
 	Trim:     cqImageUrlTrim,
 }
 
-func cqImageGenerate(img string) string {
-	return fmt.Sprintf(`[CQ:image,file=%s]`, img)
+func cqImageGenerate(endpoint string, bucket_name string, fname string) string {
+	return fmt.Sprintf(`[CQ:image,file=https://%s/%s/%s]`, endpoint, bucket_name, fname)
 }
 
 func cqImageUrlTrim(img string) string {
