@@ -1,4 +1,7 @@
+data/db/sqlite3.db
+
 data/go-cqhttp/*
+
 logs/*
 *.exe
 
