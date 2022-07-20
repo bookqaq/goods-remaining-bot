@@ -4,5 +4,3 @@ data/go-cqhttp/*
 
 logs/*
 *.exe
-
-oss/connector.go
