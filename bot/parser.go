@@ -336,12 +336,17 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		if clen != 2 {
 			return "未进行删除操作，请检查指令格式，现阶段仅支持单次删除一个"
 		}
-		rsid, err := rsgroup.Auth(rs, sender)
+		_, err := rsgroup.Auth(rs, sender)
 		if err != nil {
 			return err.Error()
 		}
 
-		if err := imagestore.DeleteOne(rsid); err != nil {
+		imgid, err := strconv.ParseInt(commands[1], 10, 32)
+		if err != nil {
+			return err.Error()
+		}
+		
+		if err := imagestore.DeleteOne(imgid); err != nil {
 			return fmt.Sprintf("删除图片时失败:%s", err)
 		}
 		return "删除成功"
