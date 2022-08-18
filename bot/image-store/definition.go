@@ -142,12 +142,14 @@ func InsertImageFromMessage(msg string, rs int32) map[string]interface{} {
 			continue
 		}
 
-		imgurl, ok := data.(map[string]interface{})["file"].(string)
-		if !ok || imgurl == "" {
+		imginterface, ok := data.(map[string]interface{})["file"]
+		if !ok {
 			log.Println(err)
 			failed = append(failed, i+1)
 			continue
 		}
+
+		imgurl := imginterface.(string)
 
 		imgurl = fmt.Sprintf("%s%s", go_cqhttp_relative_path, imgurl)
 		var target Image

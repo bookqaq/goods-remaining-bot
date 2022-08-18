@@ -345,8 +345,8 @@ func rsImageStoreCommandParser(commands []string, sender int64, group int64) str
 		if err != nil {
 			return err.Error()
 		}
-		
-		if err := imagestore.DeleteOne(imgid); err != nil {
+
+		if err := imagestore.DeleteOne(int32(imgid)); err != nil {
 			return fmt.Sprintf("删除图片时失败:%s", err)
 		}
 		return "删除成功"
