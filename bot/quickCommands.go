@@ -3,7 +3,6 @@ package bot
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	cqcode "bookq.xyz/goods-remaining-bot/bot/cq-code"
 	imagestore "bookq.xyz/goods-remaining-bot/bot/image-store"
@@ -86,7 +85,7 @@ func quickGetRS(rstype uint8, group int64) string {
 		return "未找到对应的图库，请咨询管理员(或者我)"
 	}
 
-	var netBuilder strings.Builder
+	//var netBuilder strings.Builder
 
 	for _, rs := range rss {
 		if rs.RType == rstype {
@@ -97,16 +96,16 @@ func quickGetRS(rstype uint8, group int64) string {
 			if len(res) == 0 {
 				return "图库中未存放图片"
 			}
-			netBuilder.WriteString("如果萝卜被吞图了，请看这里:")
+			//netBuilder.WriteString("如果萝卜被吞图了，请看这里:")
 			for _, item := range res {
-				netBuilder.WriteString(fmt.Sprintf("\nhttps://%s/%s/%s", oss.Endpoint, oss.Bucket_name, item.Fname));
+				//netBuilder.WriteString(fmt.Sprintf("\nhttps://%s/%s/%s", oss.Endpoint, oss.Bucket_name, item.Fname));
 				MsgSender.Group <- QQMessage{Dst: group, S: cqcode.CQImage.Generate(oss.Endpoint, oss.Bucket_name, item.Fname)}
 			}
 		}
 	}
 
-	if netBuilder.Len() > 18 {
-		MsgSender.Group <- QQMessage{Dst: group, S: netBuilder.String()}
-	}
+	//if netBuilder.Len() > 18 {
+	//	MsgSender.Group <- QQMessage{Dst: group, S: netBuilder.String()}
+	//}
 	return ""
 }

@@ -136,15 +136,15 @@ func InsertImageFromMessage(msg string, rs int32) map[string]interface{} {
 		}
 
 		data, ok := fres["data"]
-		if !ok {
+		if !ok || data == nil {
 			log.Printf("图片%s数据获取失败", fileName)
 			failed = append(failed, i+1)
 			continue
 		}
 
 		imginterface, ok := data.(map[string]interface{})["file"]
-		if !ok {
-			log.Println(err)
+		if !ok || data == nil {
+			log.Printf("图片%s数据获取失败", fileName)
 			failed = append(failed, i+1)
 			continue
 		}
@@ -195,21 +195,22 @@ func UpdateOneFromMessage(msg string, priv int32) error {
 		return err
 	}
 	data, ok := fres["data"]
-	if !ok {
+	if !ok || data == nil {
 		return errors.New("图片拉取失败，请再试一次")
 	}
 
-	imgurl, ok := data.(map[string]interface{})["file"].(string)
-	if !ok || imgurl == "" {
-		return errors.New("图片路径获取，请再试一次")
+	imginterface, ok := data.(map[string]interface{})["file"]
+	if !ok || data == nil {
+		return errors.New("图片拉取失败，不知道怎么解决，请等之后版本吧")
 	}
-	imgurl = fmt.Sprintf("%s%s", go_cqhttp_relative_path, imgurl)
+
+	imgurl := imginterface.(string)
 
 	var target Image
 	target.NewPrivKey()
 	mtype, err := mimetype.DetectFile(imgurl)
 	if err != nil {
-		return errors.New("图片类型判断失败")
+		return fmt.Errorf("图片类型判断失败，%s", err.Error())
 	}
 	target.Fname = fmt.Sprintf("%d%s", target.Priv, mtype.Extension())
 	if err := oss.UploadFile(target.Fname, imgurl, mtype.String()); err != nil {
